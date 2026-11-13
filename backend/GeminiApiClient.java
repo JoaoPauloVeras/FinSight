@@ -2,6 +2,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpTimeoutException;
 import java.time.Duration;
 import java.util.Arrays;
@@ -22,12 +23,28 @@ public class GeminiApiClient {
 
     private static final String URL_BASE = "https://generativelanguage.googleapis.com/v1beta/models/";
 
-    // Tempo máximo (segundos) que o Java aguarda por cada modelo antes de saltar para o próximo
-    private static final int TIMEOUT_SEGUNDOS = 12;
+    // Tempo máximo (segundos) que o Java aguarda a RESPOSTA de cada modelo antes de saltar para o próximo.
+    // Em servidores pequenos (ex.: plano gratuito do Render) 12s é pouco; ajuste com GEMINI_TIMEOUT_SEGUNDOS.
+    private static final int TIMEOUT_SEGUNDOS = lerTimeout();
+    // Tempo máximo só para ESTABELECER a conexão com a Google (se estourar, o problema é de rede, não do modelo)
+    private static final int TIMEOUT_CONEXAO_SEGUNDOS = 10;
 
     private static final HttpClient CLIENT = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(TIMEOUT_SEGUNDOS))
+            .connectTimeout(Duration.ofSeconds(TIMEOUT_CONEXAO_SEGUNDOS))
             .build();
+
+    private static int lerTimeout() {
+        String env = System.getenv("GEMINI_TIMEOUT_SEGUNDOS");
+        if (env != null && !env.isBlank()) {
+            try {
+                int v = Integer.parseInt(env.trim());
+                if (v >= 5 && v <= 60) return v;
+            } catch (NumberFormatException ignorado) {
+                // usa o padrão
+            }
+        }
+        return 30;
+    }
 
     private static String[] modelos() {
         String env = System.getenv("GEMINI_MODELS");
@@ -56,8 +73,10 @@ public class GeminiApiClient {
         for (String modelo : modelos()) {
             try {
                 System.out.println("🤖 [FinSight IA] Tentando o modelo: " + modelo);
+                long inicio = System.currentTimeMillis();
                 String resposta = executarChamadaModelo(modelo, apiKey, payload);
-                System.out.println("✅ [FinSight IA] Sucesso com o modelo: " + modelo);
+                System.out.println("✅ [FinSight IA] Sucesso com o modelo: " + modelo
+                        + " em " + (System.currentTimeMillis() - inicio) + " ms");
                 return resposta;
             } catch (Exception e) {
                 System.err.println("⚠️ [FALLBACK] O modelo '" + modelo + "' falhou (" + e.getMessage() + ").");
@@ -84,8 +103,12 @@ public class GeminiApiClient {
         HttpResponse<String> response;
         try {
             response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (HttpConnectTimeoutException e) {
+            throw new RuntimeException("não foi possível conectar à API do Google em "
+                    + TIMEOUT_CONEXAO_SEGUNDOS + "s (problema de rede do servidor)");
         } catch (HttpTimeoutException e) {
-            throw new RuntimeException("tempo limite esgotado (" + TIMEOUT_SEGUNDOS + "s)");
+            throw new RuntimeException("conectou, mas o modelo não respondeu em " + TIMEOUT_SEGUNDOS
+                    + "s (modelo lento ou sobrecarregado)");
         } catch (java.io.IOException e) {
             throw new RuntimeException("falha de rede (" + e.getClass().getSimpleName() + ")");
         }
