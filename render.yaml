@@ -1,0 +1,17 @@
+# Blueprint do Render: descreve o serviço em código (opcional, mas deixa o deploy em poucos cliques)
+services:
+  - type: web
+    name: finsight
+    runtime: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      # sync:false = o Render pede o valor no painel; a chave NUNCA vai para o GitHub
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: BRAPI_TOKEN
+        sync: false
+      - key: CDI_ANUAL
+        value: "10.75"
+      - key: IA_MAX_POR_MINUTO
+        value: "10"

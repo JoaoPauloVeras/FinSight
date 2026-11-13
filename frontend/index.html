@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinSight — Personal Finance Dashboard</title>
+    <!-- Fonte Elegante -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ==========================================================================
+           1. VARIÁVEIS DE DESIGN — TEMA FINSIGHT (VERDE ESMERALDA)
+           ========================================================================== */
+        :root {
+            --bg-off-white: #F4F7F6;
+            --bg-card: #FFFFFF;
+            --emerald-dark: #072E27;     /* Fundo da Sidebar (Inspirado no Logo) */
+            --emerald-deep: #0D473B;
+            --emerald-medium: #0D9488;   /* Cor Principal de Ação */
+            --emerald-light: #E6F4F1;    /* Fundo de Destiques */
+            --accent-mint: #10B981;      /* Verde Mentolado dos Indicadores */
+            --accent-red: #EF4444;
+            --text-primary: #111827;
+            --text-secondary: #4B5563;
+            --border-subtle: #E5E7EB;
+            --shadow-soft: 0 4px 20px rgba(7, 46, 39, 0.06);
+            --sidebar-width: 260px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-off-white);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ==========================================================================
+           2. SIDEBAR LATERAL (FINSIGHT BRANDING)
+           ========================================================================== */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--emerald-dark);
+            color: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 18px;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand-box {
+            margin-bottom: 32px;
+        }
+
+        /* Logo FinSight (arquivo logo-finsight.png, na mesma pasta deste HTML) */
+        .brand-box img {
+            display: block;
+            width: 100%;
+            max-width: 224px;
+            height: auto;
+        }
+
+        .workspace-badge {
+            background-color: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 28px;
+            font-size: 0.8rem;
+            color: #D1D5DB;
+        }
+
+        .menu-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #9CA3AF;
+            margin-bottom: 12px;
+            padding-left: 6px;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            background: none;
+            border: none;
+            color: #D1D5DB;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #FFFFFF;
+            font-weight: 600;
+        }
+
+        /* ==========================================================================
+           3. ÁREA PRINCIPAL
+           ========================================================================== */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 32px 40px;
+        }
+
+        header {
+            margin-bottom: 28px;
+        }
+
+        header h1 {
+            color: var(--emerald-dark);
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        header p {
+            color: var(--emerald-medium);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ==========================================================================
+           4. FERRAMENTA DE BUSCA E TABELA DE AÇÕES
+           ========================================================================== */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 18px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .metric-card span.title {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .metric-card .value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .tag-up {
+            display: inline-block;
+            background-color: rgba(16, 185, 129, 0.12);
+            color: var(--accent-mint);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .tag-down {
+            display: inline-block;
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--accent-red);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .stocks-table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 28px;
+        }
+
+        .table-header-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .table-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--emerald-dark);
+        }
+
+        /* BARRA DE PESQUISA DE AÇÕES (SEARCH BAR) */
+        .search-box {
+            display: flex;
+            gap: 8px;
+            width: 320px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .search-box button {
+            background-color: var(--emerald-medium);
+            color: #FFF;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        td {
+            padding: 14px 12px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        tr.stock-row {
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        tr.stock-row:hover, tr.stock-row.selected {
+            background-color: var(--emerald-light);
+        }
+
+        /* ==========================================================================
+           5. MÓDULO IA EM CONTEXTO
+           ========================================================================== */
+        .ai-context-wrapper {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .ai-grid {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 20px;
+        }
+
+        .context-card {
+            background-color: var(--bg-off-white);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 18px;
+        }
+
+        .context-card h4 {
+            color: var(--emerald-dark);
+            font-size: 1.3rem;
+            margin-bottom: 4px;
+        }
+
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .chat-output {
+            min-height: 90px;
+            background-color: var(--emerald-light);
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--emerald-dark);
+        }
+
+        .quick-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .pill-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        .pill-btn:hover {
+            border-color: var(--emerald-medium);
+            color: var(--emerald-medium);
+        }
+
+        .chat-input-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-box input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+        }
+
+        .btn-send {
+            background-color: var(--emerald-medium);
+            color: #FFF;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* FORMULÁRIOS DAS OUTRAS ABAS */
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--emerald-dark); margin-bottom: 8px; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-subtle); border-radius: 8px; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Resposta da IA (Markdown renderizado): espaçamento entre temas, listas e destaques */
+        .ia-texto { white-space: pre-wrap; line-height: 1.65; }  /* pre-wrap preserva as quebras das mensagens de erro */
+        #texto-ia { color: var(--emerald-dark); font-size: 0.95rem; }
+        .ia-texto p { margin: 0 0 12px; }
+        .ia-texto .ia-titulo { font-size: 0.95rem; font-weight: 800; color: var(--emerald-deep); margin: 18px 0 6px; }
+        .ia-texto ul, .ia-texto ol { margin: 0 0 12px; padding-left: 22px; }
+        .ia-texto li { margin-bottom: 6px; padding-left: 2px; }
+        .ia-texto strong { font-weight: 700; color: var(--emerald-deep); }
+        .ia-texto code { background: rgba(7, 46, 39, 0.08); padding: 1px 6px; border-radius: 4px; font-size: 0.85em; }
+        .ia-texto > :first-child { margin-top: 0; }
+        .ia-texto > :last-child { margin-bottom: 0; }
+        .erro-linha { color: var(--accent-red); font-size: 0.85rem; }
+        .btn-submit { width: 100%; padding: 14px; background-color: var(--emerald-medium); color: #FFF; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .result-box { margin-top: 20px; padding: 20px; background-color: var(--emerald-light); border-radius: 8px; display: none; }
+    </style>
+</head>
+<body>
+
+<!-- 1. SIDEBAR LATERAL (FINSIGHT BRANDING) -->
+<aside class="sidebar">
+    <div class="brand-box">
+        <img src="logo-finsight.png" alt="FinSight">
+    </div>
+    <div class="workspace-badge">
+        <strong>Workspace Private</strong><br>
+        <span style="font-size: 0.75rem; opacity: 0.8;">Investidor Qualificado</span>
+    </div>
+    <div class="menu-label">Navegação</div>
+    <nav class="nav-menu">
+        <button class="nav-item active" onclick="openTab('acoes-br', event)">📊 Ações Brasileiras</button>
+        <button class="nav-item" onclick="openTab('renda-fixa', event)">🏛️ Renda Fixa</button>
+        <button class="nav-item" onclick="openTab('cambio', event)">💱 Câmbio Real-Time</button>
+        <button class="nav-item" onclick="openTab('ia-analytics', event)">🤖 IA Analytics</button>
+    </nav>
+</aside>
+
+<!-- 2. ÁREA PRINCIPAL -->
+<main class="main-content">
+    <header>
+        <h1>Personal Finance Dashboard</h1>
+        <p>Investor's Right Hand with AI-Analytics</p>
+    </header>
+
+    <!-- ABA 1: AÇÕES BRASILEIRAS (COM BUSCA DENTRO DA TABELA) -->
+    <section id="acoes-br" class="tab-content active">
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <span class="title">Ibovespa • IBOV</span>
+                <div class="value" id="m-ibov">—</div>
+            </div>
+            <div class="metric-card">
+                <span class="title" id="m-alta-titulo">Maior alta</span>
+                <div class="value" id="m-alta">—</div>
+            </div>
+            <div class="metric-card">
+                <span class="title" id="m-queda-titulo">Maior queda</span>
+                <div class="value" id="m-queda">—</div>
+            </div>
+            <div class="metric-card">
+                <span class="title">Pulso do mercado</span>
+                <div class="value" id="m-pulso" style="font-size: 1.1rem; margin-top: 6px;">—</div>
+            </div>
+        </div>
+
+        <!-- TABELA COM FERRAMENTA DE PESQUISA (SEARCH BAR) -->
+        <div class="stocks-table-container">
+            <div class="table-header-box">
+                <div class="table-title">Principais Ações B3</div>
+                <div class="search-box">
+                    <input type="text" id="input-busca-ticker" placeholder="Buscar ticker (ex: MGLU3)...">
+                    <button id="btn-buscar" onclick="buscarAcaoWeb()">Buscar</button>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>Empresa / Ativo</th>
+                    <th>Setor</th>
+                    <th>Preço</th>
+                    <th>Var. no Dia</th>
+                </tr>
+                </thead>
+                <tbody id="tabela-acoes-body">
+                <tr><td colspan="4">Carregando cotações...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- CHAT IA EM CONTEXTO -->
+        <div class="ai-context-wrapper">
+            <div style="margin-bottom:16px;"><h3 style="color:var(--emerald-dark)">💡 Entenda Suas Ações com IA</h3></div>
+            <div class="ai-grid">
+                <div class="context-card">
+                    <span style="font-size:0.7rem; text-transform:uppercase; color:var(--emerald-medium); font-weight:700;">Ação em Contexto</span>
+                    <h4 id="ctx-ticker">—</h4>
+                    <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:12px;" id="ctx-nome">Aguardando cotações</p>
+                    <div style="font-size: 1.2rem; font-weight:700;" id="ctx-preco">—</div>
+                    <span class="tag-up" id="ctx-var" style="margin-top:6px; display:none;"></span>
+                </div>
+
+                <div class="chat-area">
+                    <div class="chat-output ia-texto" id="chat-resposta">
+                        Selecione uma ação ou pesquise no campo acima para fazer perguntas à IA.
+                    </div>
+
+                    <div class="quick-pills">
+                        <button class="pill-btn" onclick="perguntarQuick('Quais são os principais riscos desse ativo no cenário atual?')">Riscos do ativo?</button>
+                        <button class="pill-btn" onclick="perguntarQuick('Como essa cotação afeta a tese de dividendos?')">Impacto nos dividendos?</button>
+                        <button class="pill-btn" onclick="perguntarQuick('Resuma a visão do mercado em 3 linhas.')">Resumo em 3 linhas</button>
+                    </div>
+
+                    <div class="chat-input-box">
+                        <input type="text" id="input-prompt-acao" placeholder="Pergunte sobre a ação selecionada...">
+                        <button class="btn-send" id="btn-send-ia" onclick="enviarPerguntaContexto()">Enviar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABA 2: RENDA FIXA (SEPARADO TESOURO SELIC, CDB E LCI COM % DO CDI) -->
+    <section id="renda-fixa" class="tab-content">
+        <div class="form-group">
+            <label for="tipo-ativo">Tipo de Investimento</label>
+            <select id="tipo-ativo" onchange="alternarCampoCdi()">
+                <option value="cdb">CDB / RDC (Tributável - % do CDI)</option>
+                <option value="tesouro">Tesouro Selic (Tributável - 100% Selic)</option>
+                <option value="lci">LCI / LCA (Isento de IR - % do CDI)</option>
+            </select>
+        </div>
+
+        <!-- Campo Dinâmico: Percentual do CDI -->
+        <div class="form-group" id="group-percentual-cdi">
+            <label for="percentual-cdi">Percentual do CDI (%)</label>
+            <input type="number" id="percentual-cdi" value="100" placeholder="Ex: 100, 110, 120">
+        </div>
+
+        <div class="form-group">
+            <label for="valor-investido">Valor Investido (R$)</label>
+            <input type="number" id="valor-investido" value="10000">
+        </div>
+        <div class="form-group">
+            <label for="prazo-dias">Prazo (Dias)</label>
+            <input type="number" id="prazo-dias" value="365">
+        </div>
+        <button class="btn-submit" onclick="calcularRendaFixa()">Simular Investimento</button>
+
+        <div id="resultado-rf" class="result-box">
+            <h3 style="color:var(--emerald-dark); margin-bottom:8px;">Relatório de Rendimento FinSight</h3>
+            <p id="rf-detalhes" style="line-height:1.6;"></p>
+        </div>
+    </section>
+
+    <!-- ABA 3: CÂMBIO -->
+    <section id="cambio" class="tab-content">
+        <div class="form-group">
+            <label for="moeda-destino">Moeda de Destino</label>
+            <select id="moeda-destino">
+                <option value="USD">Dólar Americano (USD)</option>
+                <option value="EUR">Euro (EUR)</option>
+                <option value="BTC">Bitcoin (BTC)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="valor-brl">Valor em Reais (R$)</label>
+            <input type="number" id="valor-brl" value="5000">
+        </div>
+        <button class="btn-submit" onclick="converterMoeda()">Buscar Cotação Real-Time</button>
+
+        <div id="resultado-cambio" class="result-box">
+            <h3 style="color:var(--emerald-dark); margin-bottom:8px;">Cotação em Tempo Real</h3>
+            <p id="cambio-detalhes"></p>
+        </div>
+    </section>
+
+    <!-- ABA 4: IA ANALYTICS GERAL -->
+    <section id="ia-analytics" class="tab-content">
+        <div class="form-group">
+            <label for="prompt-ia">Pergunta Estratégica para o Gemini</label>
+            <input type="text" id="prompt-ia" value="Resuma o cenário macroeconômico para alocação em ações e renda fixa.">
+        </div>
+        <button class="btn-submit" id="btn-gerar-ia" onclick="gerarAnaliseIA()">Solicitar Parecer ao Gemini</button>
+
+        <div id="resultado-ia" class="result-box">
+            <h3 style="color:var(--emerald-dark); margin-bottom:8px;">Parecer Estratégico IA</h3>
+            <div id="texto-ia" class="ia-texto"></div>
+        </div>
+    </section>
+</main>
+
+<!-- 3. JAVASCRIPT: BUSCA DE AÇÕES E INTEGRAÇÃO -->
+<script>
+    // Em produção (Nginx) o site e a API ficam no MESMO endereço, então basta o caminho relativo "/api".
+    // Em desenvolvimento (arquivo aberto direto ou servidor local) aponta para o backend em localhost:8080
+    // (nesse caso rode o backend com a variável CORS_ORIGIN=* no IntelliJ).
+    const EM_DESENVOLVIMENTO = location.protocol === 'file:' ||
+        ((location.hostname === 'localhost' || location.hostname === '127.0.0.1') && location.port !== '8080');
+    const API_BASE_URL = EM_DESENVOLVIMENTO ? "http://localhost:8080/api" : "/api";
+
+    // Ação selecionada (contexto do chat de IA). Fica null até as cotações carregarem.
+    let acaoAtual = null;
+
+    // =====================================================================
+    // UTILIDADES
+    // =====================================================================
+
+    // Todas as chamadas passam por aqui: checa response.ok e mostra a mensagem de erro REAL do backend.
+    // Antes, um erro 400/500 virava "NaN" na tela ou o texto genérico "Ação não encontrada.".
+    async function chamarApi(caminho) {
+        let response;
+        try {
+            response = await fetch(`${API_BASE_URL}${caminho}`);
+        } catch (e) {
+            throw new Error("Não foi possível falar com o servidor. Tente novamente em instantes.");
+        }
+
+        let data = null;
+        try { data = await response.json(); } catch (e) { /* corpo vazio ou inválido */ }
+
+        if (!response.ok) throw new Error((data && data.erro) || `Erro HTTP ${response.status}`);
+        if (!data) throw new Error("Resposta inválida do servidor.");
+        return data;
+    }
+
+    function formatarMoeda(valor, casas = 2) {
+        return Number(valor).toLocaleString('pt-BR', {
+            style: 'currency', currency: 'BRL',
+            minimumFractionDigits: casas, maximumFractionDigits: casas
+        });
+    }
+
+    function formatarVariacao(v) {
+        const n = Number(v);
+        return (n >= 0 ? '+' : '') + n.toFixed(2).replace('.', ',') + '%';
+    }
+
+    function criarBadgeVariacao(v) {
+        const span = document.createElement('span');
+        span.className = Number(v) >= 0 ? 'tag-up' : 'tag-down';
+        span.textContent = formatarVariacao(v);
+        return span;
+    }
+
+    function openTab(tabId, evt) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        evt.currentTarget.classList.add('active');
+    }
+
+    // Alternar exibição do campo % do CDI (Tesouro Selic é sempre 100%)
+    function alternarCampoCdi() {
+        const tipo = document.getElementById('tipo-ativo').value;
+        document.getElementById('group-percentual-cdi').style.display = (tipo === 'tesouro') ? 'none' : 'block';
+    }
+
+    // =====================================================================
+    // AÇÕES
+    // =====================================================================
+
+    // Monta a linha com a API do DOM (textContent): nada vindo do servidor é interpretado como HTML
+    function criarLinhaAcao(a) {
+        const tr = document.createElement('tr');
+        tr.className = 'stock-row';
+        tr.dataset.ticker = a.ticker;
+        tr.addEventListener('click', () => selecionarAcao(a, tr));
+
+        const tdNome = document.createElement('td');
+        const strong = document.createElement('strong');
+        strong.textContent = a.ticker;
+        const small = document.createElement('small');
+        small.style.color = 'var(--text-secondary)';
+        small.textContent = a.nome;
+        tdNome.append(strong, document.createElement('br'), small);
+
+        const tdSetor = document.createElement('td');
+        tdSetor.textContent = a.setor;
+
+        const tdPreco = document.createElement('td');
+        tdPreco.textContent = formatarMoeda(a.preco);
+
+        const tdVar = document.createElement('td');
+        tdVar.appendChild(criarBadgeVariacao(a.var));
+
+        tr.append(tdNome, tdSetor, tdPreco, tdVar);
+        return tr;
+    }
+
+    function mostrarLinhaTabela(texto, erro) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 4;
+        td.textContent = texto;
+        if (erro) td.className = 'erro-linha';
+        tr.appendChild(td);
+        document.getElementById('tabela-acoes-body').appendChild(tr);
+    }
+
+    // Carrega a lista inicial do backend (antes o HTML vinha com preços fixos e a rota /api/acoes nunca era chamada)
+    async function carregarAcoes() {
+        const tbody = document.getElementById('tabela-acoes-body');
+        try {
+            const data = await chamarApi('/acoes');
+            if (!data.acoes.length) {
+                throw new Error("A Brapi não retornou nenhuma cotação (verifique a internet e o BRAPI_TOKEN).");
+            }
+
+            tbody.innerHTML = '';
+            data.acoes.forEach(a => tbody.appendChild(criarLinhaAcao(a)));
+            if (data.indisponiveis.length) {
+                mostrarLinhaTabela('Sem cotação no momento: ' + data.indisponiveis.join(', '), true);
+            }
+
+            atualizarMetricas(data.acoes);
+            selecionarAcao(data.acoes[0], tbody.firstElementChild);
+        } catch (e) {
+            tbody.innerHTML = '';
+            mostrarLinhaTabela('Não foi possível carregar as cotações. ' + e.message, true);
+        }
+        carregarIbovespa();
+    }
+
+    function preencherMetrica(idValor, idTitulo, rotulo, acao) {
+        document.getElementById(idTitulo).textContent = `${rotulo} • ${acao.ticker}`;
+        const el = document.getElementById(idValor);
+        el.textContent = formatarMoeda(acao.preco) + ' ';
+        el.appendChild(criarBadgeVariacao(acao.var));
+    }
+
+    // Cards calculados a partir das cotações reais (antes eram textos fixos que nunca mudavam)
+    function atualizarMetricas(acoes) {
+        const ordenadas = [...acoes].sort((a, b) => b.var - a.var);
+        const maior = ordenadas[0];
+        const menor = ordenadas[ordenadas.length - 1];
+
+        // Se todas subiram (ou todas caíram) o rótulo "maior queda" seria enganoso
+        preencherMetrica('m-alta', 'm-alta-titulo', maior.var > 0 ? 'Maior alta' : 'Menor queda', maior);
+        preencherMetrica('m-queda', 'm-queda-titulo', menor.var < 0 ? 'Maior queda' : 'Menor alta', menor);
+
+        const altas = acoes.filter(a => a.var > 0).length;
+        const quedas = acoes.filter(a => a.var < 0).length;
+        document.getElementById('m-pulso').textContent = `${altas} em alta / ${quedas} em queda`;
+    }
+
+    // O índice (^BVSP) normalmente exige BRAPI_TOKEN; sem ele mostramos "Indisponível" em vez de um número inventado
+    async function carregarIbovespa() {
+        const el = document.getElementById('m-ibov');
+        try {
+            const d = await chamarApi('/acoes?ticker=' + encodeURIComponent('^BVSP'));
+            el.textContent = Number(d.preco).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + ' ';
+            el.appendChild(criarBadgeVariacao(d.var));
+        } catch (e) {
+            el.textContent = 'Indisponível';
+            el.title = e.message;
+        }
+    }
+
+    async function buscarAcaoWeb() {
+        const input = document.getElementById('input-busca-ticker');
+        const ticker = input.value.trim().toUpperCase();
+        if (!ticker) return;
+
+        const botao = document.getElementById('btn-buscar');
+        botao.disabled = true;
+        try {
+            const acao = await chamarApi('/acoes?ticker=' + encodeURIComponent(ticker));
+            const tbody = document.getElementById('tabela-acoes-body');
+
+            // Se o ticker já estava na tabela, remove a linha antiga para não duplicar
+            tbody.querySelectorAll('.stock-row').forEach(l => { if (l.dataset.ticker === acao.ticker) l.remove(); });
+
+            const linha = criarLinhaAcao(acao);
+            tbody.insertBefore(linha, tbody.firstChild);
+            selecionarAcao(acao, linha);
+            input.value = '';
+        } catch (e) {
+            alert("Erro ao buscar ação na B3: " + e.message);
+        } finally {
+            botao.disabled = false;
+        }
+    }
+
+    function selecionarAcao(acao, linha) {
+        document.querySelectorAll('.stock-row').forEach(row => row.classList.remove('selected'));
+        if (linha) linha.classList.add('selected');
+        acaoAtual = acao;
+
+        document.getElementById('ctx-ticker').textContent = acao.ticker;
+        document.getElementById('ctx-nome').textContent = acao.nome;
+        document.getElementById('ctx-preco').textContent = formatarMoeda(acao.preco);
+
+        const badge = document.getElementById('ctx-var');
+        badge.textContent = formatarVariacao(acao.var);
+        badge.className = Number(acao.var) >= 0 ? 'tag-up' : 'tag-down';
+        badge.style.display = 'inline-block';
+
+        document.getElementById('chat-resposta').textContent = `Contexto alterado para ${acao.ticker}. Faça sua pergunta!`;
+    }
+
+    // =====================================================================
+    // FORMATAÇÃO DA RESPOSTA DA IA (Markdown -> elementos do DOM)
+    // =====================================================================
+
+    // Interpreta **negrito**, *itálico* e `código`. Tudo entra por createTextNode/textContent,
+    // então nenhum HTML vindo da IA é interpretado (sem risco de injeção de código na página).
+    function adicionarTextoFormatado(pai, texto) {
+        texto.split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*\s][^*]*\*)/g).forEach(parte => {
+            if (!parte) return;
+            let el = null;
+            if (parte.startsWith('**') && parte.endsWith('**') && parte.length > 4) {
+                el = document.createElement('strong');
+                el.textContent = parte.slice(2, -2);
+            } else if (parte.startsWith('`') && parte.endsWith('`') && parte.length > 2) {
+                el = document.createElement('code');
+                el.textContent = parte.slice(1, -1);
+            } else if (parte.startsWith('*') && parte.endsWith('*') && parte.length > 2) {
+                el = document.createElement('em');
+                el.textContent = parte.slice(1, -1);
+            }
+            pai.appendChild(el || document.createTextNode(parte));
+        });
+    }
+
+    // Converte o Markdown devolvido pelo Gemini em parágrafos, títulos e listas
+    function renderizarMarkdown(texto, container) {
+        container.textContent = '';
+        let lista = null;  // <ul> ou <ol> em andamento
+
+        const novoItem = (tipo, conteudo, numero) => {
+            if (!lista || lista.tagName !== tipo) {
+                lista = document.createElement(tipo);
+                container.appendChild(lista);
+            }
+            const li = document.createElement('li');
+            if (numero) li.value = numero;  // mantém 1, 2, 3... mesmo se a IA separar os itens com linhas em branco
+            adicionarTextoFormatado(li, conteudo);
+            lista.appendChild(li);
+        };
+
+        texto.replace(/\r\n/g, '\n').split('\n').forEach(bruta => {
+            const linha = bruta.trim();
+            let m;
+
+            if (!linha) { lista = null; return; }                         // linha em branco encerra a lista
+            if (/^([-*_])\1{2,}$/.test(linha)) { lista = null; return; }  // separadores --- ou *** são ignorados
+
+            if ((m = linha.match(/^#{1,6}\s+(.+)$/))) {
+                lista = null;
+                const h = document.createElement('h4');
+                h.className = 'ia-titulo';
+                adicionarTextoFormatado(h, m[1]);
+                container.appendChild(h);
+            } else if ((m = linha.match(/^[-*\u2022]\s+(.+)$/))) {
+                novoItem('UL', m[1]);
+            } else if ((m = linha.match(/^(\d+)[.)]\s+(.+)$/))) {
+                novoItem('OL', m[2], parseInt(m[1], 10));
+            } else {
+                lista = null;
+                const p = document.createElement('p');
+                adicionarTextoFormatado(p, linha);
+                container.appendChild(p);
+            }
+        });
+    }
+
+    // =====================================================================
+    // CHAT DE IA EM CONTEXTO
+    // =====================================================================
+    async function enviarPerguntaContexto() {
+        const input = document.getElementById('input-prompt-acao');
+        const pergunta = input.value.trim();
+        if (!pergunta) return;
+
+        await processarPerguntaIA(pergunta);
+        input.value = '';
+    }
+
+    function perguntarQuick(perguntaCurta) { processarPerguntaIA(perguntaCurta); }
+
+    async function processarPerguntaIA(pergunta) {
+        const output = document.getElementById('chat-resposta');
+        const botoes = document.querySelectorAll('#btn-send-ia, .pill-btn');
+
+        let prompt = pergunta;
+        let rotulo = 'o mercado';
+        if (acaoAtual) {
+            prompt = `Contexto: ${acaoAtual.ticker} (${acaoAtual.nome}) cotada a ${formatarMoeda(acaoAtual.preco)}, ` +
+                `variação de ${formatarVariacao(acaoAtual.var)} no dia. Pergunta: ${pergunta}`;
+            rotulo = acaoAtual.ticker;
+        }
+
+        output.textContent = `⏳ Consultando Gemini IA sobre ${rotulo}...`;
+        botoes.forEach(b => b.disabled = true);   // evita disparar várias chamadas seguidas
+
+        try {
+            const data = await chamarApi('/ia?prompt=' + encodeURIComponent(prompt));
+            renderizarMarkdown(data.analise, output);
+        } catch (e) {
+            output.textContent = "❌ " + e.message;
+        } finally {
+            botoes.forEach(b => b.disabled = false);
+        }
+    }
+
+    // =====================================================================
+    // RENDA FIXA
+    // =====================================================================
+    async function calcularRendaFixa() {
+        const tipo = document.getElementById('tipo-ativo').value;
+        const valor = parseFloat(document.getElementById('valor-investido').value);
+        const dias = parseInt(document.getElementById('prazo-dias').value, 10);
+        const percentualCdi = (tipo === 'tesouro') ? 100 : parseFloat(document.getElementById('percentual-cdi').value);
+
+        // Antes, um campo vazio seguia para o backend, que assumia um valor padrão sem avisar
+        if (!(valor > 0)) return alert("Informe um valor investido maior que zero.");
+        if (!(dias >= 1)) return alert("Informe um prazo de pelo menos 1 dia.");
+        if (!(percentualCdi > 0)) return alert("Informe um percentual do CDI maior que zero.");
+
+        try {
+            const data = await chamarApi(`/rendafixa?valor=${valor}&dias=${dias}&tipo=${tipo}&percentualCdi=${percentualCdi}`);
+
+            const aliquota = (Number(data.aliquotaIr) * 100).toFixed(1).replace('.', ',');
+            const cdiRef = Number(data.taxaCdiAnual).toFixed(2).replace('.', ',');
+
+            // Só números formatados por nós entram neste HTML
+            document.getElementById('rf-detalhes').innerHTML =
+                `<strong>Valor Investido:</strong> ${formatarMoeda(data.valorInicial)}<br>` +
+                `<strong>Percentual do CDI:</strong> ${Number(data.percentualCdi)}% do CDI (CDI de referência: ${cdiRef}% a.a.)<br>` +
+                `<strong>Rendimento Bruto:</strong> ${formatarMoeda(data.rendimentoBruto)}<br>` +
+                `<strong>Imposto Descontado:</strong> ${formatarMoeda(data.imposto)} (alíquota de ${aliquota}%)<br>` +
+                `<strong>Montante Líquido Final:</strong> ${formatarMoeda(data.valorLiquido)}`;
+
+            document.getElementById('resultado-rf').style.display = 'block';
+        } catch (e) { alert("Erro: " + e.message); }
+    }
+
+    // =====================================================================
+    // CÂMBIO
+    // =====================================================================
+    async function converterMoeda() {
+        const moeda = document.getElementById('moeda-destino').value;
+        const valorBrl = parseFloat(document.getElementById('valor-brl').value);
+        if (!(valorBrl > 0)) return alert("Informe um valor em reais maior que zero.");
+
+        try {
+            const data = await chamarApi(`/cambio?moeda=${encodeURIComponent(moeda)}`);
+            if (!(data.taxa > 0)) throw new Error("Cotação inválida recebida do servidor.");
+
+            const total = valorBrl / data.taxa;
+            const casas = (moeda === 'BTC') ? 8 : 4;  // 5.000 reais em Bitcoin dá ~0,01: 4 casas esconderiam o valor
+
+            document.getElementById('cambio-detalhes').textContent =
+                `Taxa ${moeda}: ${formatarMoeda(data.taxa, 4)} | Total convertido: ` +
+                `${total.toLocaleString('pt-BR', { maximumFractionDigits: casas })} ${moeda}`;
+            document.getElementById('resultado-cambio').style.display = 'block';
+        } catch (e) { alert("Erro: " + e.message); }
+    }
+
+    // =====================================================================
+    // IA ANALYTICS (aba geral)
+    // =====================================================================
+    async function gerarAnaliseIA() {
+        const prompt = document.getElementById('prompt-ia').value.trim();
+        if (!prompt) return alert("Digite uma pergunta para o Gemini.");
+
+        const output = document.getElementById('texto-ia');
+        const botao = document.getElementById('btn-gerar-ia');
+        document.getElementById('resultado-ia').style.display = 'block';
+        output.textContent = "⏳ Consultando Gemini IA...";
+        botao.disabled = true;
+
+        try {
+            const data = await chamarApi('/ia?prompt=' + encodeURIComponent(prompt));
+            renderizarMarkdown(data.analise, output);
+        } catch (e) {
+            output.textContent = "❌ " + e.message;
+        } finally {
+            botao.disabled = false;
+        }
+    }
+
+    // =====================================================================
+    // INICIALIZAÇÃO
+    // =====================================================================
+    function ligarEnter(idInput, acao) {
+        document.getElementById(idInput).addEventListener('keydown', ev => { if (ev.key === 'Enter') acao(); });
+    }
+    ligarEnter('input-busca-ticker', buscarAcaoWeb);
+    ligarEnter('input-prompt-acao', enviarPerguntaContexto);
+    ligarEnter('prompt-ia', gerarAnaliseIA);
+
+    alternarCampoCdi();
+    carregarAcoes();
+</script>
+</body>
+</html>

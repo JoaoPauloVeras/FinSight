@@ -1,0 +1,18 @@
+# Compilados e IDE
+*.class
+*.jar
+out/
+target/
+.idea/
+*.iml
+.vscode/
+
+# SEGREDOS: nunca versionar
+.env
+.env.*
+*.pem
+*.key
+
+# Sistema
+.DS_Store
+Thumbs.db
